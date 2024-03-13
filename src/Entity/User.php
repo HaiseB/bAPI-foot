@@ -23,16 +23,12 @@ class User
     #[ORM\ManyToMany(targetEntity: Team::class, inversedBy: 'users')]
     private Collection $teams;
 
-    #[ORM\ManyToMany(targetEntity: League::class, inversedBy: 'users')]
-    private Collection $leagues;
-
     #[ORM\OneToMany(targetEntity: Goal::class, mappedBy: 'user', orphanRemoval: true)]
     private Collection $goals;
 
     public function __construct()
     {
         $this->teams = new ArrayCollection();
-        $this->leagues = new ArrayCollection();
         $this->goals = new ArrayCollection();
     }
 
@@ -73,30 +69,6 @@ class User
     public function removeTeam(Team $team): static
     {
         $this->teams->removeElement($team);
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, League>
-     */
-    public function getLeagues(): Collection
-    {
-        return $this->leagues;
-    }
-
-    public function addLeague(League $league): static
-    {
-        if (!$this->leagues->contains($league)) {
-            $this->leagues->add($league);
-        }
-
-        return $this;
-    }
-
-    public function removeLeague(League $league): static
-    {
-        $this->leagues->removeElement($league);
 
         return $this;
     }

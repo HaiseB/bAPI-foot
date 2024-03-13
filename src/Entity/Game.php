@@ -23,9 +23,6 @@ class Game
     #[ORM\Column]
     private ?bool $isOver = null;
 
-    #[ORM\ManyToOne(inversedBy: 'games')]
-    private ?League $league = null;
-
     #[ORM\ManyToMany(targetEntity: Team::class, inversedBy: 'games')]
     private Collection $teams;
 
@@ -63,18 +60,6 @@ class Game
     public function setIsOver(bool $isOver): static
     {
         $this->isOver = $isOver;
-
-        return $this;
-    }
-
-    public function getLeague(): ?League
-    {
-        return $this->league;
-    }
-
-    public function setLeague(?League $league): static
-    {
-        $this->league = $league;
 
         return $this;
     }

@@ -20,9 +20,6 @@ class Team
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[ORM\ManyToMany(targetEntity: League::class, inversedBy: 'teams')]
-    private Collection $leagues;
-
     #[ORM\ManyToMany(targetEntity: Game::class, mappedBy: 'teams')]
     private Collection $games;
 
@@ -31,7 +28,6 @@ class Team
 
     public function __construct()
     {
-        $this->leagues = new ArrayCollection();
         $this->games = new ArrayCollection();
         $this->users = new ArrayCollection();
     }
@@ -49,30 +45,6 @@ class Team
     public function setName(string $name): static
     {
         $this->name = $name;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, League>
-     */
-    public function getLeagues(): Collection
-    {
-        return $this->leagues;
-    }
-
-    public function addLeague(League $league): static
-    {
-        if (!$this->leagues->contains($league)) {
-            $this->leagues->add($league);
-        }
-
-        return $this;
-    }
-
-    public function removeLeague(League $league): static
-    {
-        $this->leagues->removeElement($league);
 
         return $this;
     }
