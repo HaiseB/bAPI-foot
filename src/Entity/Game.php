@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Repository\GameRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: GameRepository::class)]
@@ -29,10 +30,17 @@ class Game
     #[ORM\OneToMany(targetEntity: Goal::class, mappedBy: 'game', orphanRemoval: true)]
     private Collection $goals;
 
+    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'games')]
+    private Collection $users;
+
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $scheduledAt = null;
+
     public function __construct()
     {
         $this->teams = new ArrayCollection();
         $this->goals = new ArrayCollection();
+        $this->users = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -114,6 +122,42 @@ class Game
                 $goal->setGame(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getUsers(): Collection
+    {
+        return $this->users;
+    }
+
+    public function addUser(User $user): static
+    {
+        if (!$this->users->contains($user)) {
+            $this->users->add($user);
+        }
+
+        return $this;
+    }
+
+    public function removeUser(User $user): static
+    {
+        $this->users->removeElement($user);
+
+        return $this;
+    }
+
+    public function getScheduledAt(): ?\DateTimeImmutable
+    {
+        return $this->scheduledAt;
+    }
+
+    public function setScheduledAt(?\DateTimeImmutable $scheduledAt): static
+    {
+        $this->scheduledAt = $scheduledAt;
 
         return $this;
     }
