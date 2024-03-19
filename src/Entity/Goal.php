@@ -20,7 +20,7 @@ class Goal
 
     #[ORM\ManyToOne(inversedBy: 'goals')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?game $game = null;
+    private ?Game $game = null;
 
     #[ORM\ManyToOne(inversedBy: 'goals')]
     #[ORM\JoinColumn(nullable: false)]
@@ -43,12 +43,12 @@ class Goal
         return $this;
     }
 
-    public function getGame(): ?game
+    public function getGame(): ?Game
     {
         return $this->game;
     }
 
-    public function setGame(?game $game): static
+    public function setGame(?Game $game): static
     {
         $this->game = $game;
 
