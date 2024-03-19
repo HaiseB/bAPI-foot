@@ -161,4 +161,53 @@ class Game
 
         return $this;
     }
+
+    public function getUsersAndScores(): \stdClass
+    {
+        $usersAndScores = new \stdClass();
+        $usersAndScores->teamAPlayers = $teamA = $usersAndScores->teamBPlayers = $teamB = [];
+        $usersAndScores->teamAScore = $usersAndScores->teamBScore = 0;
+
+        if (!empty($this->getTeams())) {
+            foreach($this->getTeams() as $team) {
+                foreach($team->getUsers() as $user) {
+                    if (count($teamA) < 2) {
+                        array_push($teamA, $user);
+                    } else {
+                        array_push($teamB, $user);
+                    }
+                }
+            }
+
+            if (count($this->getTeams()) < 2 && empty($teamB) ) {
+                array_push($teamB, $this->getUsers()[0]);
+            }
+
+        } elseif (!empty($this->getUsers())) {
+            foreach($this->getUsers() as $user) {
+                if (empty($teamA)) {
+                    array_push($teamA, $user);
+                } else {
+                    array_push($teamB, $user);
+                }
+            }
+        }
+
+        foreach($this->getGoals() as $goal) {
+            foreach($teamA as $teamAUser) {
+                if ($goal->getUser() === $teamAUser) {
+                    array_push($usersAndScores->teamAPlayers, ["id" => $teamAUser->getId(), "name" => $teamAUser->getName(), "score" => $goal->getNumber()]);
+                    $usersAndScores->teamAScore += $goal->getNumber();
+                }
+            }
+            foreach($teamB as $teamBUser) {
+                if ($goal->getUser() === $teamBUser) {
+                    array_push($usersAndScores->teamBPlayers, ["id" => $teamBUser->getId(), "name" => $teamBUser->getName(), "score" => $goal->getNumber()]);
+                    $usersAndScores->teamBScore += $goal->getNumber();
+                }
+            }
+        }
+
+        return $usersAndScores;
+    }
 }
