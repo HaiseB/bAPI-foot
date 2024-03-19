@@ -162,12 +162,13 @@ class Game
         return $this;
     }
 
-    public function getUsersAndScores(): \stdClass
+    public function getUsersAndScoresRecap(): \stdClass
     {
         $usersAndScores = new \stdClass();
         $usersAndScores->teamAPlayers = $teamA = $usersAndScores->teamBPlayers = $teamB = [];
         $usersAndScores->teamAScore = $usersAndScores->teamBScore = 0;
 
+        // Players part
         if (!empty($this->getTeams())) {
             foreach($this->getTeams() as $team) {
                 foreach($team->getUsers() as $user) {
@@ -193,6 +194,7 @@ class Game
             }
         }
 
+        // Goals part
         foreach($this->getGoals() as $goal) {
             foreach($teamA as $teamAUser) {
                 if ($goal->getUser() === $teamAUser) {
