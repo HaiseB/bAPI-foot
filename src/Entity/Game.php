@@ -62,6 +62,10 @@ class Game
 
     public function isIsOver(): ?bool
     {
+        if ($this->getUsersAndScoresRecap()->teamAScore > 9 || $this->getUsersAndScoresRecap()->teamBScore > 9) {
+            $this->setIsOver(true);
+        }
+
         return $this->isOver;
     }
 
@@ -165,46 +169,45 @@ class Game
     public function getUsersAndScoresRecap(): \stdClass
     {
         $usersAndScores = new \stdClass();
-        $usersAndScores->teamAPlayers = $teamA = $usersAndScores->teamBPlayers = $teamB = [];
+        $usersAndScores->teamAPlayers = $usersAndScores->teamBPlayers = [];
         $usersAndScores->teamAScore = $usersAndScores->teamBScore = 0;
 
         // Players part
         if (!empty($this->getTeams())) {
-            foreach($this->getTeams() as $team) {
-                foreach($team->getUsers() as $user) {
-                    if (count($teamA) < 2) {
-                        array_push($teamA, $user);
+            foreach ($this->getTeams() as $team) {
+                foreach ($team->getUsers() as $user) {
+                    if (count($usersAndScores->teamAPlayers) < 2) {
+                        $usersAndScores->teamAPlayers[$user->getId()] = ["id" => $user->getId(), "name" => $user->getName(), "score" => 0];
                     } else {
-                        array_push($teamB, $user);
+                        $usersAndScores->teamBPlayers[$user->getId()] = ["id" => $user->getId(), "name" => $user->getName(), "score" => 0];
                     }
                 }
             }
 
-            if (count($this->getTeams()) < 2 && empty($teamB) ) {
-                array_push($teamB, $this->getUsers()[0]);
+            if (count($this->getTeams()) < 2 && empty($usersAndScores->teamBPlayers)) {
+                $usersAndScores->teamBPlayers[ $this->getUsers()[0]->getId()] = ["id" => $user->getId(), "name" => $this->getUsers()[0]->getName(), "score" => 0];
             }
-
         } elseif (!empty($this->getUsers())) {
-            foreach($this->getUsers() as $user) {
-                if (empty($teamA)) {
-                    array_push($teamA, $user);
+            foreach ($this->getUsers() as $user) {
+                if (empty($usersAndScores->teamAPlayers)) {
+                    $usersAndScores->teamAPlayers[$user->getId()] = ["id" => $user->getId(), "name" => $user->getName(), "score" => 0];
                 } else {
-                    array_push($teamB, $user);
+                    $usersAndScores->teamBPlayers[$user->getId()] = ["id" => $user->getId(), "name" => $user->getName(), "score" => 0];
                 }
             }
         }
 
         // Goals part
-        foreach($this->getGoals() as $goal) {
-            foreach($teamA as $teamAUser) {
-                if ($goal->getUser() === $teamAUser) {
-                    array_push($usersAndScores->teamAPlayers, ["id" => $teamAUser->getId(), "name" => $teamAUser->getName(), "score" => $goal->getNumber()]);
+        foreach ($this->getGoals() as $goal) {
+            foreach ($usersAndScores->teamAPlayers as $teamAPlayersUser) {
+                if ($goal->getUser()->getId() === $teamAPlayersUser["id"]) {
+                    $usersAndScores->teamAPlayers[$goal->getUser()->getId()]["score"] = $goal->getNumber();
                     $usersAndScores->teamAScore += $goal->getNumber();
                 }
             }
-            foreach($teamB as $teamBUser) {
-                if ($goal->getUser() === $teamBUser) {
-                    array_push($usersAndScores->teamBPlayers, ["id" => $teamBUser->getId(), "name" => $teamBUser->getName(), "score" => $goal->getNumber()]);
+            foreach ($usersAndScores->teamBPlayers as $teamBPlayersUser) {
+                if ($goal->getUser()->getId() === $teamBPlayersUser["id"]) {
+                    $usersAndScores->teamBPlayers[$goal->getUser()->getId()]["score"] = $goal->getNumber();
                     $usersAndScores->teamBScore += $goal->getNumber();
                 }
             }
