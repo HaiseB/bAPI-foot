@@ -62,7 +62,9 @@ class Game
 
     public function isIsOver(): ?bool
     {
-        if ($this->getUsersAndScoresRecap()->teamAScore > 9 || $this->getUsersAndScoresRecap()->teamBScore > 9) {
+        $usersAndScoresRecap = $this->getUsersAndScoresRecap();
+
+        if ($usersAndScoresRecap->teamAScore > 9 || $usersAndScoresRecap->teamBScore > 9) {
             $this->setIsOver(true);
         }
 
@@ -170,11 +172,19 @@ class Game
     {
         $usersAndScores = new \stdClass();
         $usersAndScores->teamAPlayers = $usersAndScores->teamBPlayers = [];
+        $usersAndScores->teamATeamname = $usersAndScores->teamBTeamname = [];
         $usersAndScores->teamAScore = $usersAndScores->teamBScore = 0;
 
         // Players part
-        if (!empty($this->getTeams())) {
+        if (count($this->getTeams()) > 0) {
             foreach ($this->getTeams() as $team) {
+                if (empty($usersAndScores->teamATeamname)) {
+                    $usersAndScores->teamATeamname = ["id" => $team->getId(), "name" => $team->getName()];
+                } else {
+                    $usersAndScores->teamBTeamname = ["id" => $team->getId(), "name" => $team->getName()];
+                }
+
+                // TODO no bug now BUT can happend with more than 2 user by team
                 foreach ($team->getUsers() as $user) {
                     if (count($usersAndScores->teamAPlayers) < 2) {
                         $usersAndScores->teamAPlayers[$user->getId()] = ["id" => $user->getId(), "name" => $user->getName(), "score" => 0];
@@ -185,9 +195,9 @@ class Game
             }
 
             if (count($this->getTeams()) < 2 && empty($usersAndScores->teamBPlayers)) {
-                $usersAndScores->teamBPlayers[ $this->getUsers()[0]->getId()] = ["id" => $user->getId(), "name" => $this->getUsers()[0]->getName(), "score" => 0];
+                $usersAndScores->teamBPlayers[$this->getUsers()[0]->getId()] = ["id" => $user->getId(), "name" => $this->getUsers()[0]->getName(), "score" => 0];
             }
-        } elseif (!empty($this->getUsers())) {
+        } elseif (count($this->getUsers()) > 0) {
             foreach ($this->getUsers() as $user) {
                 if (empty($usersAndScores->teamAPlayers)) {
                     $usersAndScores->teamAPlayers[$user->getId()] = ["id" => $user->getId(), "name" => $user->getName(), "score" => 0];
@@ -214,5 +224,20 @@ class Game
         }
 
         return $usersAndScores;
+    }
+
+    public function getWinner(): ?array
+    {
+        if (!$this->isIsOver()) {
+            return null;
+        }
+
+        $usersAndScoresRecap = $this->getUsersAndScoresRecap();
+
+        if ($usersAndScoresRecap->teamAScore > 9) {
+            return (empty($usersAndScoresRecap->teamATeamname)) ? $usersAndScoresRecap->teamAPlayers : $usersAndScoresRecap->teamATeamname;
+        } else {
+            return (empty($usersAndScoresRecap->teamBTeamname)) ? $usersAndScoresRecap->teamBPlayers : $usersAndScoresRecap->teamBTeamname;
+        }
     }
 }
