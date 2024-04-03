@@ -22,7 +22,7 @@ class Game
     private ?int $roundNumber = null;
 
     #[ORM\Column]
-    private ?bool $isOver = null;
+    private ?bool $isOver = false;
 
     #[ORM\ManyToMany(targetEntity: Team::class, inversedBy: 'games')]
     private Collection $teams;
@@ -35,6 +35,9 @@ class Game
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $scheduledAt = null;
+
+    #[ORM\ManyToOne(inversedBy: 'games')]
+    private ?Tournament $tournament = null;
 
     public function __construct()
     {
@@ -239,5 +242,17 @@ class Game
         } else {
             return (empty($usersAndScoresRecap->teamBTeamname)) ? $usersAndScoresRecap->teamBPlayers : $usersAndScoresRecap->teamBTeamname;
         }
+    }
+
+    public function getTournament(): ?Tournament
+    {
+        return $this->tournament;
+    }
+
+    public function setTournament(?Tournament $tournament): static
+    {
+        $this->tournament = $tournament;
+
+        return $this;
     }
 }
