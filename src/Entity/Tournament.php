@@ -26,6 +26,24 @@ class Tournament
     #[ORM\OneToMany(targetEntity: Game::class, mappedBy: 'tournament')]
     private Collection $games;
 
+    #[ORM\Column(length: 255)]
+    private ?string $type = null;
+
+    #[ORM\Column]
+    private ?int $numberOfPlayers = null;
+
+    #[ORM\Column]
+    private ?int $numberMaxOfRounds = null;
+
+    const TOURNAMENT_TYPE = [
+        'Single Elimination',
+        //'Double Elimination',
+        //'Multilevel',
+        //'Straight Round Robin',
+        //'Round Robin Double Split',
+        //'Semi-Round Robins',
+    ];
+
     public function __construct()
     {
         $this->games = new ArrayCollection();
@@ -86,6 +104,42 @@ class Tournament
                 $game->setTournament(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(string $type): static
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    public function getNumberOfPlayers(): ?int
+    {
+        return $this->numberOfPlayers;
+    }
+
+    public function setNumberOfPlayers(int $numberOfPlayers): static
+    {
+        $this->numberOfPlayers = $numberOfPlayers;
+
+        return $this;
+    }
+
+    public function getNumberMaxOfRounds(): ?int
+    {
+        return $this->numberMaxOfRounds;
+    }
+
+    public function setNumberMaxOfRounds(int $numberMaxOfRounds): static
+    {
+        $this->numberMaxOfRounds = $numberMaxOfRounds;
 
         return $this;
     }

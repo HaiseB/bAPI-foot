@@ -102,4 +102,15 @@ class Team
 
         return $this;
     }
+
+    public function getUsernames()
+    {
+        $usernames = [];
+
+        foreach($this->users as $user) {
+            $usernames[] = $user->getName();
+        }
+
+        return $usernames;
+    }
 }
