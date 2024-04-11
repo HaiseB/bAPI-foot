@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Post;
+use App\Action\Tournament\generateFirstRoundAction;
 use App\Repository\TournamentRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -10,6 +12,13 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TournamentRepository::class)]
 #[ApiResource]
+#[ApiResource(operations: [
+    new Post(
+        name: 'tournament_generate_first_round',
+        uriTemplate: 'api/tournaments/{id}/generate-first-round',
+        controller:  generateFirstRoundAction::class,
+    )
+])]
 class Tournament
 {
     #[ORM\Id]
@@ -32,17 +41,15 @@ class Tournament
     #[ORM\Column]
     private ?int $numberOfPlayers = null;
 
-    #[ORM\Column]
-    private ?int $numberMaxOfRounds = null;
+    const TOURNAMENT_TYPE_SINGLE_ELIMINATION = 'Single Elimination';
 
-    const TOURNAMENT_TYPE = [
-        'Single Elimination',
+    /* TOURNAMENT_TYPE = [
         //'Double Elimination',
         //'Multilevel',
         //'Straight Round Robin',
         //'Round Robin Double Split',
         //'Semi-Round Robins',
-    ];
+    ]; */
 
     public function __construct()
     {
@@ -132,15 +139,69 @@ class Tournament
         return $this;
     }
 
-    public function getNumberMaxOfRounds(): ?int
+    public function generateSingleEliminationFirstRound(array $players): ArrayCollection|Game
     {
-        return $this->numberMaxOfRounds;
+        $games = new ArrayCollection();
+
+        if ($this->getType() !== self::TOURNAMENT_TYPE_SINGLE_ELIMINATION || !empty($this->getGames())) {
+            return $games;
+        }
+
+        // First Round
+        while (count($players) > 1 ) {
+            $game = new Game();
+            $game->setRoundNumber(1);
+
+            for ($i = 0; $i < 2; $i++) {
+                $randomIndex = array_rand($players);
+                if ($players[$randomIndex]["type"] === "team") {
+                    $game->addTeam($players[$randomIndex]);
+                } else {
+                    $game->addUser($players[$randomIndex]);
+                }
+                unset($players[$randomIndex]);
+            }
+
+            $games->add($game);
+        }
+
+        // Autowin for the last unchosen user
+        if (count($players) === 1 ) {
+            $game = new Game();
+            $game->setRoundNumber(1);
+
+            $lastPlayer = reset($players);
+            if ($lastPlayer["type"] === "team") {
+                $game->addTeam($lastPlayer);
+            } else {
+                $game->addUser($lastPlayer);
+            }
+
+            $games->add($game);
+        }
+
+        return $games;
     }
 
-    public function setNumberMaxOfRounds(int $numberMaxOfRounds): static
+    public function getPlayers()
     {
-        $this->numberMaxOfRounds = $numberMaxOfRounds;
+        $players["users"] = $players["teams"] = [];
 
-        return $this;
+        foreach ($this->getGames() as $game) {
+
+            foreach ($game->getUsers() as $user) {
+                if (!in_array($user->getName(), $players["users"])) {
+                    $players["users"][] = $user->getName();
+                }
+            }
+
+            foreach ($game->getTeams() as $team) {
+                if (!in_array($team->getName(), $players["teams"])) {
+                    $players["teams"][] = $team->getName();
+                }
+            }
+        }
+
+        return $players;
     }
 }

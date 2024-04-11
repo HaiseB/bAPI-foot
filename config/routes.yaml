@@ -3,3 +3,10 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+
+tournament_generate_first_round:
+    path: api/tournaments/{id}/generate-first-round
+    methods: ['POST']
+    defaults:
+        _controller: App\Action\Tournament\generateFirstRoundAction
+        _api_resource_class: App\Entity\Tournament

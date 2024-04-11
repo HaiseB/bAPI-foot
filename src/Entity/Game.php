@@ -235,6 +235,15 @@ class Game
             return null;
         }
 
+        // Winner by elimination
+        if (
+            $this->isIsOver() &&
+            (empty($this->getTeams()) && !empty($this->getUsers())  ||
+                !empty($this->getTeams()) && empty($this->getUsers()))
+        ) {
+            return empty($this->getTeams()) ? $this->getUsers()[0]->getName() : $this->getTeams()[0]->getName() ;
+        }
+
         $usersAndScoresRecap = $this->getUsersAndScoresRecap();
 
         if ($usersAndScoresRecap->teamAScore > 9) {
