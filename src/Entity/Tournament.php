@@ -143,7 +143,7 @@ class Tournament
     {
         $games = new ArrayCollection();
 
-        if ($this->getType() !== self::TOURNAMENT_TYPE_SINGLE_ELIMINATION || !empty($this->getGames())) {
+        if ($this->getType() !== self::TOURNAMENT_TYPE_SINGLE_ELIMINATION || count($this->getGames()) > 0) {
             return $games;
         }
 
@@ -151,12 +151,14 @@ class Tournament
         while (count($players) > 1 ) {
             $game = new Game();
             $game->setRoundNumber(1);
+            $game->setTournament($this);
+            $game->setScheduledAt(new \DateTimeImmutable());
 
             for ($i = 0; $i < 2; $i++) {
                 $randomIndex = array_rand($players);
-                if ($players[$randomIndex]["type"] === "team") {
+                if ($players[$randomIndex] instanceof Team) {
                     $game->addTeam($players[$randomIndex]);
-                } else {
+                } elseif ($players[$randomIndex] instanceof User) {
                     $game->addUser($players[$randomIndex]);
                 }
                 unset($players[$randomIndex]);
@@ -165,15 +167,17 @@ class Tournament
             $games->add($game);
         }
 
-        // Autowin for the last unchosen user
+        // Autowin for the last unchosen user/team
         if (count($players) === 1 ) {
             $game = new Game();
             $game->setRoundNumber(1);
+            $game->setTournament($this);
+            $game->setScheduledAt(new \DateTimeImmutable());
 
             $lastPlayer = reset($players);
-            if ($lastPlayer["type"] === "team") {
+            if ($lastPlayer instanceof Team) {
                 $game->addTeam($lastPlayer);
-            } else {
+            } elseif ($lastPlayer instanceof User) {
                 $game->addUser($lastPlayer);
             }
 
