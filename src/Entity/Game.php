@@ -65,11 +65,12 @@ class Game
 
     public function isIsOver(): ?bool
     {
-        $usersAndScoresRecap = $this->getUsersAndScoresRecap();
+        // @ToDo not sure if it really needs to be implemented
+        /* $usersAndScoresRecap = $this->getUsersAndScoresRecap();
 
         if ($usersAndScoresRecap->teamAScore > 9 || $usersAndScoresRecap->teamBScore > 9) {
             $this->setIsOver(true);
-        }
+        } */
 
         return $this->isOver;
     }
@@ -187,7 +188,7 @@ class Game
                     $usersAndScores->teamBTeamname = ["id" => $team->getId(), "name" => $team->getName()];
                 }
 
-                // TODO no bug now BUT can happend with more than 2 user by team
+                // @ToDo no bug now BUT can happend with more than 2 user by team
                 foreach ($team->getUsers() as $user) {
                     if (count($usersAndScores->teamAPlayers) < 2) {
                         $usersAndScores->teamAPlayers[$user->getId()] = ["id" => $user->getId(), "name" => $user->getName(), "score" => 0];
@@ -198,7 +199,7 @@ class Game
             }
 
             if (count($this->getTeams()) < 2 && empty($usersAndScores->teamBPlayers)) {
-                $usersAndScores->teamBPlayers[$this->getUsers()[0]->getId()] = ["id" => $user->getId(), "name" => $this->getUsers()[0]->getName(), "score" => 0];
+                $usersAndScores->teamBPlayers[$this->getUsers()[0]->getId()] = ["id" => $this->getUsers()[0]->getId(), "name" => $this->getUsers()[0]->getName(), "score" => 0];
             }
         } elseif (count($this->getUsers()) > 0) {
             foreach ($this->getUsers() as $user) {
@@ -229,7 +230,7 @@ class Game
         return $usersAndScores;
     }
 
-    public function getWinner(): ?array
+    public function getWinner(bool $wholeEntity = false): mixed
     {
         if (!$this->isIsOver()) {
             return null;
@@ -238,19 +239,26 @@ class Game
         // Winner by elimination
         if (
             $this->isIsOver() &&
-            (empty($this->getTeams()) && !empty($this->getUsers())  ||
-                !empty($this->getTeams()) && empty($this->getUsers()))
+            (count($this->getTeams()) === 1 && count($this->getUsers()) === 0  ||
+            count($this->getUsers()) === 1 && count($this->getTeams()) === 0 )
         ) {
-            return empty($this->getTeams()) ? $this->getUsers()[0]->getName() : $this->getTeams()[0]->getName() ;
+            $winner = count($this->getUsers()) === 1 ? $this->getUsers()[0] : $this->getTeams()[0];
+
+            return $wholeEntity? $winner : $winner->getName();
         }
 
         $usersAndScoresRecap = $this->getUsersAndScoresRecap();
 
+        // @ToDo optimize here with wholeEntity, maybe with getUsersAndScoresRecap()?
         if ($usersAndScoresRecap->teamAScore > 9) {
-            return (empty($usersAndScoresRecap->teamATeamname)) ? $usersAndScoresRecap->teamAPlayers : $usersAndScoresRecap->teamATeamname;
+            $winner = (empty($usersAndScoresRecap->teamATeamname)) ? $usersAndScoresRecap->teamAPlayers : $usersAndScoresRecap->teamATeamname;
+        } elseif ($usersAndScoresRecap->teamBScore > 9) {
+            $winner = (empty($usersAndScoresRecap->teamBTeamname)) ? $usersAndScoresRecap->teamBPlayers : $usersAndScoresRecap->teamBTeamname;
         } else {
-            return (empty($usersAndScoresRecap->teamBTeamname)) ? $usersAndScoresRecap->teamBPlayers : $usersAndScoresRecap->teamBTeamname;
+            return null;
         }
+
+        return $winner;
     }
 
     public function getTournament(): ?Tournament

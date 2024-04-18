@@ -24,3 +24,6 @@ services:
     # please note that last definitions always *replace* previous ones
     App\Action\Tournament\generateFirstRoundAction:
         tags: ['controller.service_arguments']
+
+    App\Action\Tournament\generateNextRoundAction:
+        tags: ['controller.service_arguments']

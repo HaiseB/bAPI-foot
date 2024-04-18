@@ -51,13 +51,22 @@ class generateFirstRoundAction
                 }
             }
 
-            $firstRoundGames = $tournament->generateSingleEliminationFirstRound($players);
-
-            foreach ($firstRoundGames as $game) {
-                $this->entityManager->persist($game);
+            switch ($tournament->getType()) {
+                case Tournament::TOURNAMENT_TYPE_SINGLE_ELIMINATION:
+                    $firstRoundGames = $tournament->generateSingleEliminationFirstRound($players);
+                    break;
+                default:
+                    $firstRoundGames = [];
+                    break;
             }
 
-            $this->entityManager->flush();
+            if (!empty($firstRoundGames)) {
+                foreach ($firstRoundGames as $game) {
+                    $this->entityManager->persist($game);
+                }
+
+                $this->entityManager->flush();
+            }
 
         } catch (\Exception $e) {
             return new JsonResponse($e, Response::HTTP_INTERNAL_SERVER_ERROR);
